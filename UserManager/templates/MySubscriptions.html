@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/my_subscriptions.css')}}">
+    <script src="{{ url_for('static', filename='js/MySubscriptions.js')}}" defer></script>
+    <title>Le mie sottoscrizioni</title>
+</head>
+<body>
+    <nav class="navbar navbar-dark bg-dark">
+        <span class="navbar-brand mb-0 h1">MyWeather</span>
+        <input type="email" id="current_user_email" value="{{ current_user.email }}" style="display:none;">
+        <span class="navbar-text ml-auto mt-4">Email: {{ current_user.email }} </span>
+        <a href="/home">Torna alla home</a>
+    </nav>
+    <h1>Sottoscrizioni di {{ current_user.nome }} </h1>
+   
+    <div id="MySubscriptions" class="container">
+        <!-- Qui verranno aggiunti i preferiti -->
+    </div>
+</body>
+</html> 

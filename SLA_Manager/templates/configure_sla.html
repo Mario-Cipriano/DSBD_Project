@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/configure_sla.css')}}">
+    <title>Configurazione Metriche</title>
+</head>
+
+<body>
+
+    <form id="metricForm" method="post">
+        <div class="metric">
+            <div>
+                <input type="checkbox" id="docker_container_cpu_usage" name="metrics[]" value="docker_container_cpu_usage">
+                <label for="docker_container_cpu_usage">Utilizzo CPU per Container (termini percentuali)</label> Min: <input type="text" class="min" name="min_values[]" placeholder="Inserisci il valore minimo"> Max: <input type="text" class="max" name="max_values[]"
+                    placeholder="Inserisci il valore massimo">
+                <br>
+            </div>
+
+            <div>
+                <input type="checkbox" id="docker_container_memory_usage_mb" name="metrics[]" value="docker_container_memory_usage_mb">
+                <label for="docker_container_memory_usage_mb">Utilizzo della memoria per container (in MegaBytes)</label> Min: <input type="text" class="min" name="min_values[]" placeholder="Inserisci il valore minimo"> Max: <input type="text" class="max"
+                    name="max_values[]" placeholder="Inserisci il valore massimo">
+                <br>
+            </div>
+
+            <div>
+                <input type="checkbox" id="database_query_response_time" name="metrics[]" value="database_query_response_time">
+                <label for="database_query_response_time">Tempo di risposta della query di myweather_handler del database (secondi)</label> Min: <input type="text" class="min" name="min_values[]" placeholder="Inserisci il valore minimo"> Max: <input type="text"
+                    class="max" name="max_values[]" placeholder="Inserisci il valore massimo">
+                <br>
+            </div>
+            <div>
+                <input type="checkbox" id="storage_usage_percent" name="metrics[]" value="storage_usage_percent">
+                <label for="storage_usage_percent">Percentuale di utilizzo  e disponibile dello storage del nodo (in MegaBytes)</label> Min: <input type="text" class="min" name="min_values[]" placeholder="Inserisci il valore minimo"> Max: <input type="text"
+                    class="max" name="max_values[]" placeholder="Inserisci il valore massimo">
+                <br>
+            </div>
+
+            <div>
+                <input type="checkbox" id="docker_container_network_usage" name="metrics[]" value="docker_container_network_usage">
+                <label for="docker_container_network_usage">Utilizzo di rete per container (in Bytes)</label> Min: <input type="text" class="min" name="min_values[]" placeholder="Inserisci il valore minimo"> Max: <input type="text" class="max" name="max_values[]"
+                    placeholder="Inserisci il valore massimo">
+                <br>
+            </div>
+
+            <div>
+                <input type="checkbox" id="network_usage" name="metrics[]" value="network_usage">
+                <label for="network_usage">Utilizzo di rete a livello di nodo</label> Min: <input type="text" class="min" name="min_values[]" placeholder="Inserisci il valore minimo"> Max: <input type="text" class="max" name="max_values[]" placeholder="Inserisci il valore massimo">
+                <br>
+            </div>
+
+        </div>
+
+        <input type="button" value="Salva nel DB" onclick="submitForm()">
+    </form>
+
+    <input type="button" value="aggiorna sla" onclick="get_violations()">
+    <input type="button" value="violations_for_hours" onclick="get_violations_for_hours()">
+    <div id="sla_actual"></div>
+    <div id="violations_hours"></div>
+
+    <script>
+        function submitForm(event) {
+            var form = document.getElementById('metricForm');
+            var checkboxes = form.elements['metrics[]'];
+            var isAtLeastOneChecked = false;
+            for (var i = 0; i < checkboxes.length; i++) {
+                if (checkboxes[i].checked) {
+                    isAtLeastOneChecked = true;
+                    break;
+                }
+            }
+
+            if (!isAtLeastOneChecked) {
+                alert("Seleziona almeno una metrica!");
+                return;
+            }
+
+            var selectedMetrics = [];
+            for (var i = 0; i < checkboxes.length; i++) {
+                if (checkboxes[i].checked) {
+                    const container = checkboxes[i].parentNode
+                    let item = {
+                        metric: checkboxes[i].value,
+                        min_val: container.querySelector("input.min").value,
+                        max_val: container.querySelector("input.max").value
+                    }
+                    selectedMetrics.push(item);
+                }
+            }
+            //form.elements['metrics[]'].value = selectedMetrics.join(',');
+            console.log(selectedMetrics);
+            fetch("/sla", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(selectedMetrics),
+            }).then(onResponse).then(onData)
+            console.log(selectedMetrics);
+        }
+
+        function onResponse(response) {
+            console.log(response)
+            return response.json();
+        }
+
+        function onData(json) {
+            console.log(json);
+        }
+
+        function get_violations() {
+            fetch("/sla/status").then(onResponse).then(onJson1);
+        }
+
+        function onJson1(json) {
+            const result_div = document.getElementById("sla_actual");
+            while (result_div.firstChild) {
+                result_div.removeChild(result_div.firstChild);
+            }
+            for (var i = 0; i < json["message"].length; i++) {
+                const li = document.createElement("li");
+                li.textContent = "Metrica:" + json["message"][i]["metric_name"] + " , valore attuale: " + json["message"][i]["actual_value"] + ",min_value" + json["message"][i]["min_value"] + ",max_value" + json["message"][i]["max_value"];
+                result_div.appendChild(li);
+            }
+        }
+
+        function get_violations_for_hours() {
+            fetch("/sla/violations_for_hours").then(onResponse).then(onJson2);
+        }
+
+        function onJson2(json) {
+            const result_div = document.getElementById("violations_hours");
+            while (result_div.firstChild) {
+                result_div.removeChild(result_div.firstChild);
+            }
+            for (var i = 0; i < json["message"].length; i++) {
+                const li = document.createElement("li");
+                li.textContent = "Hours:" + json["message"][i]["hours"] + " , nome_metrica: " + json["message"][i]["metric_name"] + " ,numero_violazioni: " + json["message"][i]["numbers_violations"];
+                result_div.appendChild(li);
+            }
+        }
+    </script>
+
+</body>
+
+</html>

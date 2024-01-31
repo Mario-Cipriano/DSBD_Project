@@ -1,0 +1,122 @@
+body {
+    background-color: #f8f9fa;
+    font-family: 'Arial', sans-serif;
+}
+
+.navbar {
+    font-family: 'Arial', sans-serif;
+    background-color:black;
+    padding: 5px;
+    color: #fff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+   
+}
+
+.navbar-brand {
+    font-size: 1.8em;
+    padding: 5px 20px;
+
+}
+
+
+.navbar-text {
+    font-size: 1em;
+    color: #ffffff; /* Colore del testo bianco */
+    margin-right: 5px;
+    margin-bottom: 22px; /* Margine a sinistra tra i collegamenti */
+    text-decoration: none; /* Rimuove la sottolineatura del testo */
+    font-weight: bold; /* Testo in grassetto */
+    font-size: 1em;
+}
+
+
+.navbar a {
+    color: #ffffff; /* Colore del testo bianco */
+    margin-right: 5px; /* Margine a sinistra tra i collegamenti */
+    text-decoration: none; /* Rimuove la sottolineatura del testo */
+    font-weight: bold; /* Testo in grassetto */
+    font-size: 1em;
+}
+.navbar a:hover {
+    color: #f8f9fa; /* Colore del testo bianco più leggero al passaggio del mouse */
+}
+
+.weather-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+}
+
+.weather-form {
+    width: 300px;
+}
+
+#weather-iframe-container {
+    width: 100%;
+    /* Imposta la larghezza al 100% per occupare l'intera larghezza della pagina */
+    overflow: hidden;
+}
+.form-group input[type="hidden"] {
+    display: none; /* Rendi il campo nascosto */
+}
+
+/* Stile per l'etichetta associata al campo nascosto */
+.form-group label[for="current_user_email"] {
+    display: none; /* Rendi invisibile l'etichetta associata al campo nascosto */
+    /* Altri stili opzionali a seconda delle tue esigenze */
+    color: #999; /* Colore del testo */
+    font-style: italic; /* Stile del carattere */
+    /* Aggiungi altri stili se necessario */
+}
+#weather-iframe {
+    width: 100%;
+    height: 100vh;
+    border: none;
+    padding-top: 20px;
+}
+
+.legend {
+    background-color: white;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+}
+
+.legend-title {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.legend-row {
+    display: flex;
+    align-items: center;
+}
+
+.color-box {
+    width: 20px;
+    height: 20px;
+    margin-right: 5px;
+}
+
+.label {
+    margin-right: 10px;
+}
+.alert-success {
+    margin-top: 5px;
+    padding: 5px;
+    border: 1px solid #5cb85c;
+    border-radius: 4px;
+    color: #3c763d;
+    background-color: #dff0d8;
+}
+.error {
+    color: #a94442;
+    font-weight: bold;
+    margin-top: 5px;
+  }

@@ -1,0 +1,102 @@
+
+body {
+    font-family: 'Arial', sans-serif;
+    background-color:#fff;
+    margin: 0;
+
+}
+
+.navbar {
+    font-family: 'Arial', sans-serif;
+    background-color:black;
+    padding: 10px;
+    color: #fff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.navbar-brand {
+    font-size: 1.8em;
+    padding: 5px 20px;
+}
+
+.navbar-text {
+    margin-top: 5px;
+    font-size: 1em;
+    margin-right:5px ;
+    margin-bottom:5px ;
+}
+
+#MySubscriptions {
+    max-width: 800px;
+    margin:auto;
+  
+  
+}
+
+.navbar a {
+    text-decoration: none;
+    color:  #fff;
+    font-size: 1em;
+    margin-right:5px ;
+}
+h1{
+font-family: 'Arial', sans-serif;
+text-align: center;
+font-size: 2.2em; 
+}
+.row {
+    margin-top: 20px;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+
+.div {
+    background-color: rgb(218, 151, 6);
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.div-title {
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+.div-subtitle,
+.text-muted {
+    font-size: 0.9em;
+}
+
+.text-align-center {
+    text-align: center;
+}
+
+.button {
+    display: flex;
+    justify-content:center;
+    margin-top: 10px;
+    
+
+    
+}
+
+.button1 {
+    margin-right: 10px;
+    background-color: transparent;
+    border: transparent;
+  
+}
+.dimension {
+    width: 30%; /* Regola la larghezza delle card container a tuo piacimento */
+    margin-bottom: 20px;
+}
+.image{
+    width:20px;
+    height:20px;
+    background-position: center;
+}

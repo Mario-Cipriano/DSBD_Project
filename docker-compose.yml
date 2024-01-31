@@ -1,0 +1,186 @@
+version: '3'
+services:
+  sla_manager:
+    container_name: sla_manager
+    image: sla_manager  
+    build:
+     context: .
+     dockerfile: SLA_Manager.Dockerfile
+    ports:
+      - "3003:3003"  
+    volumes:
+    - sla-manager-volume:/SLA_Manager.py
+    environment:
+     DATABASE_URI: mysql+pymysql://root:toor@sla_managerDB:3306/sla_managerDB
+    depends_on: 
+    - prometheus
+    - database-sla-manager
+    
+  database-sla-manager:
+    container_name: sla_managerDB
+    build:
+      context: .
+      dockerfile: sla_managerDB.Dockerfile
+    ports:
+      - "6035:3306"
+
+  prometheus:
+   image: prom/prometheus
+   volumes:
+    - ./prometheus.yml:/etc/prometheus/prometheus.yml
+   ports:
+    - '9090:9090'
+
+  metrics_scraper:
+   restart: always
+   container_name: metrics_scraper
+   build:
+    context: .
+    dockerfile: Metrics_scraper.Dockerfile
+   image: prom/node-exporter
+   volumes: 
+   - /var/run/docker.sock:/var/run/docker.sock
+   ports:
+     - '9100:9100'
+   depends_on: 
+     - myweather_handler
+
+  zookeeper:
+    container_name: zookeeper
+    restart: always
+    image: docker.io/bitnami/zookeeper:3.8
+    ports:
+      - "22181:2181"
+    volumes:
+      - "zookeeper-volume:/bitnami"
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+
+  kafka:
+    container_name: kafka
+    restart: always
+    image: docker.io/bitnami/kafka:3.3
+    ports:
+      - "9093:9092"
+    volumes:
+      - "kafka-volume:/bitnami"
+    environment: 
+      - KAFKA_BROKER_ID=1
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      - KAFKA_CFG_LISTENERS=CLIENT://:9092,EXTERNAL://:9093
+      - KAFKA_CFG_ADVERTISED_LISTENERS=CLIENT://kafka:9092,EXTERNAL://my.previsioniweather.com:9093
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=CLIENT
+      - KAFKA_CREATE_TOPICS="PingRoute:1:1"
+      - KAFKA_CFG_LOG_DIRS=/bitnami/kafka/data
+      - KAFKA_MESSAGE_MAX_BYTES=1000000
+    depends_on:
+      - zookeeper
+      
+  database:
+    container_name: utenteDB
+    build:
+      context: .
+      dockerfile: utenteDB.Dockerfile
+    ports:
+      - "6033:3306"
+
+  weather-data-processor:
+    container_name: weather-data-processor
+    restart: always
+    build:
+      context: .
+      dockerfile: WeatherDataProcessor.Dockerfile  
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS_CONSUMER: 'kafka:9092'  
+      KAFKA_GROUP_ID: 'gruppo-di-consumatori'  
+      KAFKA_AUTO_OFFSET_RESET: 'earliest'
+      KAFKA_BOOTSTRAP_SERVERS_PRODUCER: 'kafka:9092'
+    volumes:
+      - weather-data-processor-volume:/WeatherDataProcessor.py  
+    depends_on:
+      - kafka
+    
+  alert_notifier:
+    container_name: alert_notifier
+    restart: always
+    build:
+      context: .
+      dockerfile: AlertNotifier.Dockerfile  
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: 'kafka:9092'  
+      KAFKA_GROUP_ID: 'gruppo-di-alert'  
+      KAFKA_AUTO_OFFSET_RESET: 'earliest'
+    volumes:
+      - alert-notifier-volume:/AlertNotifier.py  
+    depends_on:
+      - kafka
+    
+  user_manager:
+    build:
+      context: .
+      dockerfile: UserManager.Dockerfile
+    container_name: user_manager
+    depends_on:
+      - database
+    volumes:
+      - user-manager-volume:/UserManager.py  
+    environment:
+      DATABASE_URI: mysql+pymysql://root:toor@utenteDB:3306/utenteDB 
+    ports:
+      - "3001:3001"
+
+  database2:
+    container_name: weatherDB
+    build:
+      context: .
+      dockerfile: weatherDB.Dockerfile
+    ports:
+      - "6034:3306"
+      
+  myweather_handler:
+    restart: always
+    build:
+      context: .
+      dockerfile: MyWeatherHandler.Dockerfile
+    container_name: myweather_handler
+    volumes:
+      - myweather-handler-volume:/MyWeatherHandler.py 
+    environment:
+      DATABASE_URI: mysql+pymysql://root:toor@weatherDB:3306/weatherDB
+    ports:
+      - "3002:3002" 
+    depends_on:
+      - database2 
+      - kafka 
+    
+  nginx:
+    restart: always
+    image: nginx:alpine
+    container_name: api_gateway_my_weather
+    volumes:
+      - ./configuration.conf:/etc/nginx/conf.d/configuration.conf:ro
+    ports:
+      - "8080:80"
+    depends_on:
+      - user_manager
+      - myweather_handler
+    
+    command: >
+      sh -c "until nc -z myweather_handler 3002; do echo 'Waiting for app to start...'; sleep 1; done; exec nginx -g 'daemon off;'"
+    
+       
+  
+  
+  
+volumes:
+  kafka-volume:
+  zookeeper-volume:
+  weather-data-processor-volume:
+  alert-notifier-volume:
+  user-manager-volume:
+  database2-volume:
+  myweather-handler-volume:
+  prometheus-volume:
+  sla-manager-volume:

@@ -1,0 +1,5 @@
+#Create an MySQL image
+docker run --name myweather -e MYSQL_ROOT_PASSWORD=toor -d -p 6033:3306 mysql
+
+#build an image of the application
+docker build -t <image-name> -f "dockerFile.Dockerfile" .
